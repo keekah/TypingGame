@@ -1,6 +1,7 @@
 package com.kika.typinggame;
 
 import java.awt.*;
+
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -11,20 +12,29 @@ public class GameScreen extends JFrame
 {
 	private ArrayList<String> words;
 	
+	private String displayWord;
+	private JLabel displayWordLabel;
+	
+	private String wordTyped;
+	private JLabel wordTypedLabel;
+	
+	
+	private boolean typedCorrectly; 
+	
+	private Component listeningPane;
+	
 	private JLabel scoreLabel;
 	private JLabel wpmLabel;
 	private JLabel accuracyLabel;
-	private JButton quitButton;
-	private JButton pauseButton;
-	private JButton restartButton;
-	private JButton clearButton;
+	private JLabel numericScoreLabel;
+	private JLabel numericWPMLabel;
+	private JLabel numericAccuracyLabel;
 	
-	private String wordTyped;
-	private String wordToMatch;
-	private JLabel wordTypedLabel;
-	private JLabel wordToMatchLabel;
-	private boolean typedCorrectly; 
-	private JPanel captureArea;
+	private int score;
+	private int numberOfWordsTyped;
+	private int numberOfWordsPresented; 
+	private int numberOfCharactersTyped;
+	private int numberOfMistypedCharacters;			// number of mistyped characters
 	
 	public GameScreen(String wordBank)
 	{
@@ -35,9 +45,13 @@ public class GameScreen extends JFrame
 		
 		words = new ArrayList<String>();
 		wordTyped = "";
-		wordTypedLabel = new JLabel();
-		wordToMatchLabel = new JLabel();
 		typedCorrectly = false;
+		
+		score = 0;
+		numberOfWordsPresented = 0;
+		numberOfWordsTyped = 0;
+		numberOfCharactersTyped = 0;
+		numberOfMistypedCharacters = 0;
 		
 		makeFrame();
 		makeStatusBar();
@@ -46,12 +60,13 @@ public class GameScreen extends JFrame
 		
 		createWordBank("word-banks/GoT-names-places.txt");
 		
-		System.out.println(words.size());
-		
-		// TODO add a glass pane and attach the key listener to that 
-		
-		addKeyListener(new KeyListener()
+		listeningPane = getGlassPane();
+		listeningPane.setFocusTraversalKeysEnabled(false);
+		listeningPane.setFocusable(true);
+		listeningPane.setVisible(true);
+		listeningPane.addKeyListener(new KeyListener()
 		{
+			
 			@Override
 			public void keyTyped(KeyEvent e)
 			{
@@ -62,16 +77,21 @@ public class GameScreen extends JFrame
 				{
 					wordTyped += c;
 					wordTypedLabel.setText(wordTyped);
+					incrementCharactersTyped();
+					
 				}
 				
 				
-				if (wordTyped.equals(wordToMatch))
+				if (wordTyped.equals(displayWord))
 				{
 					typedCorrectly = true;
 					JOptionPane.showMessageDialog(GameScreen.this,  "Congratulations!");
 					clearInput();
-					wordToMatch = getRandomWord();
-					wordToMatchLabel.setText(wordToMatch);
+					displayWord = getRandomWord();
+					displayWordLabel.setText(displayWord);
+					System.out.println(numberOfWordsPresented);
+					numericAccuracyLabel.setText(String.valueOf(getAccuracy()));
+					incrementScore(displayWord.length());
 				}
 					
 					
@@ -84,6 +104,7 @@ public class GameScreen extends JFrame
 				{
 					wordTyped = wordTyped.substring(0, wordTyped.length()-1);
 					wordTypedLabel.setText(wordTyped);
+					incrementErrors();
 				}
 					
 			}
@@ -110,7 +131,20 @@ public class GameScreen extends JFrame
 	private String getRandomWord()
 	{
 		int index = (int)(Math.random() * words.size());
-		return words.get(index);
+		String nextWord = words.get(index);
+		
+		// count the number of individual words in nextWord (which may be more than one, e.g. nextWord = "FirstName LastName");
+		String [] individualWords = nextWord.split(" ", -1);
+		numberOfWordsPresented += individualWords.length;
+		
+//		for (String s : individualWords)
+//		{
+//			System.out.print(s + " ");
+//		}
+//		
+//		System.out.println();
+		
+		return nextWord;
 	}
 	
 	// TODO clean this up, maybe change to startGame()
@@ -118,8 +152,8 @@ public class GameScreen extends JFrame
 	{
 		do
 		{
-			wordToMatch = getRandomWord();
-			wordToMatchLabel.setText(wordToMatch);
+			displayWord = getRandomWord();
+			displayWordLabel.setText(displayWord);
 			
 			while (true)
 			{
@@ -138,43 +172,67 @@ public class GameScreen extends JFrame
 		try (Scanner in = new Scanner(new File(filename)))
 		{
 			while (in.hasNextLine())
-				words.add(in.nextLine().trim());
+			{
+				String word = in.nextLine().trim();
+				if (!words.add(word))
+					System.out.println(word);
+				
+//				words.add(in.nextLine().trim());
+				
+			}
 		}
-		catch (Exception e)
+		// TODO exceptions more thoroughly 
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+		}
+		catch(NullPointerException e)
 		{
 			e.printStackTrace();
 		}
 		
 	}
 	
+	private void incrementScore(int points)
+	{
+		score += points;
+		numericScoreLabel.setText(String.valueOf(score));
+	}
+	
+	private void setDisplayLabel(String displayWord)
+	{
+		displayWordLabel.setText(displayWord);
+	}
+	
 	private void makeCaptureArea()
 	{
 		JPanel centerArea = new JPanel(new GridLayout(2,1));
 		
-		captureArea = new JPanel();
-		captureArea.add(wordToMatchLabel);
-
-		
-		JPanel displayArea = new JPanel();
-		displayArea.add(wordTypedLabel);
-		
-		centerArea.add(captureArea);
+			JPanel displayArea = new JPanel(new GridBagLayout());
+			displayWordLabel = new JLabel();
+			displayArea.add(displayWordLabel);
+			
+			JPanel captureArea = new JPanel(new GridBagLayout());
+			wordTypedLabel = new JLabel();
+			captureArea.add(wordTypedLabel);
+			
+//			captureArea.setBackground(new Color(125, 0, 125, 100));
+			
 		centerArea.add(displayArea);
+		centerArea.add(captureArea);
 		
 		add(centerArea, BorderLayout.CENTER);
-		
 		
 	}
 	
 	public void makeFrame()
 	{
-		setSize(800,1000);
+//		setSize(800,1000);
+		setPreferredSize(new Dimension(800,1000));
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
-		setFocusable(true);
-		setFocusTraversalKeysEnabled(false);
-		
+		pack();
 		setVisible(true);
 	}
 	
@@ -184,20 +242,26 @@ public class GameScreen extends JFrame
 		wpmLabel = new JLabel("WPM: ");
 		accuracyLabel = new JLabel("Accuracy: ");
 		
+		numericScoreLabel = new JLabel();
+		numericWPMLabel = new JLabel();
+		numericAccuracyLabel = new JLabel();
+		
 		JPanel statusPanel = new JPanel();
 		statusPanel.add(scoreLabel);
+		statusPanel.add(numericScoreLabel);
 		statusPanel.add(wpmLabel);
+		statusPanel.add(numericWPMLabel);
 		statusPanel.add(accuracyLabel);
+		statusPanel.add(numericAccuracyLabel);
 		
 		add(statusPanel, BorderLayout.NORTH);
 	}
 	
 	private void makeButtons()
 	{
-		quitButton = new JButton("Quit");
-		pauseButton = new JButton("Pause");
-		restartButton = new JButton("Restart");
-		clearButton = new JButton("Clear");
+		JButton quitButton = new JButton("Quit");
+		JButton pauseButton = new JButton("Pause");
+		JButton restartButton = new JButton("Restart");
 		
 		quitButton.addActionListener(new ActionListener()
 															{
@@ -207,11 +271,13 @@ public class GameScreen extends JFrame
 																}
 															});
 		
-		clearButton.addActionListener(new ActionListener()
+		restartButton.addActionListener(new ActionListener()
 															{
 																public void actionPerformed(ActionEvent e)
 																{
+//																	listeningPane.setFocusable(false);
 																	clearInput();
+																	listeningPane.requestFocus();
 																}
 															});
 		
@@ -219,8 +285,6 @@ public class GameScreen extends JFrame
 		buttonPanel.add(quitButton);
 		buttonPanel.add(pauseButton);
 		buttonPanel.add(restartButton);
-		buttonPanel.add(clearButton);
-		
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
@@ -230,8 +294,28 @@ public class GameScreen extends JFrame
 		wordTypedLabel.setText(wordTyped);
 	}
 	
+	private void incrementErrors()
+	{
+		numberOfMistypedCharacters++;
+	}
+	
+	private void incrementCharactersTyped()
+	{
+		numberOfCharactersTyped++;
+	}
+	
+	private double getAccuracy()
+	{
+		double accuracy = numberOfCharactersTyped - numberOfMistypedCharacters;
+		accuracy /= numberOfCharactersTyped;
+		
+		
+		return accuracy;
+	}
+	
 	public static void main(String [] args)
 	{
 		new GameScreen("Game of Thrones");
 	}
 }
+
