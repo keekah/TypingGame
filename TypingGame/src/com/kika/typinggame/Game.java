@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -104,6 +105,9 @@ class WelcomePanel extends JPanel
 		buttonPanel.add(quitButton);
 		buttonPanel.add(viewHiScoresButton);
 		buttonPanel.add(playButton);
+		
+		// allow user to select play using the enter key
+		frame.getRootPane().setDefaultButton(playButton);
 		
 		add(buttonPanel);
 		
@@ -212,7 +216,7 @@ class GamePanel extends JPanel
 		
 		JPanel accuracyPanel = new JPanel();
 		JLabel accuracyLabel = new JLabel("Accuracy: ");
-		numericAccuracyLabel = new JLabel();
+		numericAccuracyLabel = new JLabel("0");
 		accuracyPanel.add(accuracyLabel);
 		accuracyPanel.add(numericAccuracyLabel);
 		
@@ -220,6 +224,7 @@ class GamePanel extends JPanel
 		statusBar.add(scorePanel);
 		statusBar.add(wpmPanel);
 		statusBar.add(accuracyPanel);
+
 		
 		add(statusBar, BorderLayout.NORTH);
 		
@@ -254,6 +259,8 @@ class GamePanel extends JPanel
 		buttonPanel.add(quitButton);
 		buttonPanel.add(pauseButton);
 		buttonPanel.add(restartButton);
+		
+		
 		add(buttonPanel, BorderLayout.SOUTH);
 		
 	}
@@ -350,8 +357,7 @@ class GamePanel extends JPanel
 		accuracy /= numberOfCharactersTyped;
 		accuracy *= 100;
 		
-		
-		return String.valueOf(accuracy);
+		return String.format("%.2f", accuracy);
 	}
 	
 	private void incrementScore(int points)
