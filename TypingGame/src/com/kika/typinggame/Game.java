@@ -118,8 +118,8 @@ class GamePanel extends JPanel
 	private String wordTyped;
 	private boolean typedCorrectly; 
 	
-	private JLabel wordTypedLabel;
 	private JLabel displayWordLabel;
+	private JLabel typedWordLabel;
 	
 	private JLabel numericScoreLabel;
 	private JLabel numericWPMLabel;
@@ -141,12 +141,14 @@ class GamePanel extends JPanel
 			throw new NullPointerException("wordBank");
 		
 		initializeFiles();
-		initializePanel();
+		initializeStatusAndButtonBars();
+		initializeCenterArea();
 		initializeListener(frame);
 		
 		loadWordBank(wordBank);
 		
-		
+		clearInput();
+		displayNewWord();
 	}
 
 	private void loadWordBank(String wordBank)
@@ -164,9 +166,6 @@ class GamePanel extends JPanel
 				if (word.length() > 0)
 					if (!words.add(word))
 						System.out.println(word);
-				
-//				words.add(in.nextLine().trim());
-				
 			}
 		}
 		// TODO exceptions more thoroughly 
@@ -188,27 +187,39 @@ class GamePanel extends JPanel
 		files.put("Game of Thrones", "GoT-names-places.txt");
 	}
 	
-	private void initializePanel()
+	private void displayNewWord()
+	{
+		displayWord = getRandomWord();
+		displayWordLabel.setText(displayWord);
+	}
+	
+	private void initializeStatusAndButtonBars()
 	{
 		setLayout(new BorderLayout());
 		
 		// make the status bar
+		JPanel scorePanel = new JPanel();
 		JLabel scoreLabel = new JLabel("Score: ");
-		numericScoreLabel = new JLabel();
+		numericScoreLabel = new JLabel("0");
+		scorePanel.add(scoreLabel);
+		scorePanel.add(numericScoreLabel);
 		
+		JPanel wpmPanel = new JPanel();
 		JLabel wpmLabel = new JLabel("WPM: ");
-		numericWPMLabel = new JLabel();
+		numericWPMLabel = new JLabel("0");
+		wpmPanel.add(wpmLabel);
+		wpmPanel.add(numericWPMLabel);
 		
+		JPanel accuracyPanel = new JPanel();
 		JLabel accuracyLabel = new JLabel("Accuracy: ");
 		numericAccuracyLabel = new JLabel();
+		accuracyPanel.add(accuracyLabel);
+		accuracyPanel.add(numericAccuracyLabel);
 		
-		JPanel statusBar = new JPanel();
-		statusBar.add(scoreLabel);
-		statusBar.add(numericScoreLabel);
-		statusBar.add(wpmLabel);
-		statusBar.add(numericWPMLabel);
-		statusBar.add(accuracyLabel);
-		statusBar.add(numericAccuracyLabel);
+		JPanel statusBar = new JPanel(new GridLayout(1,3));
+		statusBar.add(scorePanel);
+		statusBar.add(wpmPanel);
+		statusBar.add(accuracyPanel);
 		
 		add(statusBar, BorderLayout.NORTH);
 		
@@ -247,6 +258,23 @@ class GamePanel extends JPanel
 		
 	}
 	
+	private void initializeCenterArea()
+	{
+		JPanel displayArea = new JPanel(new GridBagLayout());
+		displayWordLabel = new JLabel();
+		displayArea.add(displayWordLabel);
+		
+		JPanel captureArea = new JPanel(new GridBagLayout());
+		typedWordLabel = new JLabel();
+		captureArea.add(typedWordLabel);
+		
+		JPanel centerArea = new JPanel(new GridLayout(2,1));
+		centerArea.add(displayArea);
+		centerArea.add(captureArea);
+		
+		add(centerArea, BorderLayout.CENTER);
+	}
+	
 	private void initializeListener(GameFrame frame)
 	{
 		listeningPane = frame.getGlassPane();
@@ -265,7 +293,7 @@ class GamePanel extends JPanel
 				if (isValidKey(c))
 				{
 					wordTyped += c;
-					wordTypedLabel.setText(wordTyped);
+					typedWordLabel.setText(wordTyped);
 					incrementCharactersTyped();
 					
 				}
@@ -274,13 +302,11 @@ class GamePanel extends JPanel
 				if (wordTyped.equals(displayWord))
 				{
 					typedCorrectly = true;
-//					JOptionPane.showMessageDialog(this,  "Congratulations!", "Word Typed", );
 					clearInput();
-					displayWord = getRandomWord();
-					displayWordLabel.setText(displayWord);
+					displayNewWord();
 //					System.out.println(numberOfWordsPresented);
 					numericAccuracyLabel.setText(getAccuracyString());
-//					incrementScore(displayWord.length());
+					incrementScore(displayWord.length());
 				}
 					
 					
@@ -292,8 +318,8 @@ class GamePanel extends JPanel
 				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE && wordTyped.length() > 0)
 				{
 					wordTyped = wordTyped.substring(0, wordTyped.length()-1);
-					wordTypedLabel.setText(wordTyped);
-//					incrementErrors();
+					typedWordLabel.setText(wordTyped);
+					incrementErrors();
 				}
 					
 			}
@@ -315,7 +341,7 @@ class GamePanel extends JPanel
 	private void clearInput()
 	{
 		wordTyped = "";
-		wordTypedLabel.setText(wordTyped);
+		typedWordLabel.setText(wordTyped);
 	}
 	
 	private String getAccuracyString()
@@ -342,32 +368,6 @@ class GamePanel extends JPanel
 	private void incrementCharactersTyped()
 	{
 		numberOfCharactersTyped++;
-	}
-	
-	private void createWordBank(String filename)
-	{
-		try (Scanner in = new Scanner(new File(filename)))
-		{
-			while (in.hasNextLine())
-			{
-				String word = in.nextLine().trim();
-				if (!words.add(word))
-					System.out.println(word);
-				
-//				words.add(in.nextLine().trim());
-				
-			}
-		}
-		// TODO exceptions more thoroughly 
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		catch(NullPointerException e)
-		{
-			e.printStackTrace();
-		}
-		
 	}
 	
 	// retrieve a word at random from the hashset
