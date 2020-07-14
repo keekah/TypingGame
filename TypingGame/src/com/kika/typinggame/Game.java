@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import javax.swing.*;
@@ -53,17 +54,17 @@ class WelcomePanel extends JPanel
 	{
 		setLayout(new GridLayout(2,1));
 		
-		// selectionPanel which goes on top
+		// top panel
 		JPanel selectionPanel = new JPanel();
 		
 		JLabel label = new JLabel("Select a word bank: ");
 		String [] wordBanks = {"Game of Thrones", "Literary Quotes", "Symbols", "Letters"};
 		JComboBox dropDown = new JComboBox(wordBanks);
+		wordBank = "Game of Thrones";	// set default selection
 		dropDown.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					// TODO make sure a wordbank is selected before hitting play
 					wordBank = (String)dropDown.getSelectedItem();
 				}
 			});
@@ -74,32 +75,31 @@ class WelcomePanel extends JPanel
 		add(selectionPanel);
 		
 		
-		// buttonPanel which goes on bottom
+		// bottom panel
 		JPanel buttonPanel  = new JPanel();
 		JButton quitButton = new JButton("Quit");
 		JButton viewHiScoresButton = new JButton("Hi Scores");
 		JButton playButton = new JButton("Play");
 		
-		quitButton.addActionListener(new ActionListener(){
-															public void actionPerformed(ActionEvent e)
-															{
-																System.exit(0);
-															}
-														  });
+		quitButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					System.exit(0);
+				}
+			});
 		
 		//TODO view hi scores 
+		viewHiScoresButton.setEnabled(false);
 		
-		playButton.addActionListener(new ActionListener(){
-															public void actionPerformed(ActionEvent e)
-															{
-//																new GameScreen(wordBank);
-																System.out.println("You selected: " + wordBank);
-																GamePanel gamePanel = new GamePanel(wordBank, frame);
-//																frame.getContentPane().removeAll();
-																frame.setContentPane(gamePanel);
-																frame.repaint();
-															}
-														 });
+		playButton.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					frame.setContentPane(new GamePanel(wordBank, frame));
+					frame.repaint();
+				}
+			});
 		
 		buttonPanel.add(quitButton);
 		buttonPanel.add(viewHiScoresButton);
@@ -131,6 +131,8 @@ class GamePanel extends JPanel
 	private int numberOfCharactersTyped;
 	private int numberOfMistypedCharacters;	
 	
+	private HashMap<String, String> files;	// the files associated with names of wordbanks
+	
 	private ArrayList<String> words;
 	
 	public GamePanel(String wordBank, GameFrame frame)
@@ -138,8 +140,52 @@ class GamePanel extends JPanel
 		if (wordBank == null)
 			throw new NullPointerException("wordBank");
 		
+		initializeFiles();
 		initializePanel();
 		initializeListener(frame);
+		
+		loadWordBank(wordBank);
+		
+		
+	}
+
+	private void loadWordBank(String wordBank)
+	{
+		words = new ArrayList<String>();
+		
+		String filename = "word-banks/GoT-names-places.txt";
+		
+		try (Scanner in = new Scanner(new File(filename)))
+		{
+			while (in.hasNextLine())
+			{
+				String word = in.nextLine().trim();
+				
+				if (word.length() > 0)
+					if (!words.add(word))
+						System.out.println(word);
+				
+//				words.add(in.nextLine().trim());
+				
+			}
+		}
+		// TODO exceptions more thoroughly 
+		catch (FileNotFoundException e)
+		{
+			e.printStackTrace();
+		}
+		catch(NullPointerException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void initializeFiles()
+	{
+		files = new HashMap<String, String>();
+		
+		// TODO add more files
+		files.put("Game of Thrones", "GoT-names-places.txt");
 	}
 	
 	private void initializePanel()
@@ -173,24 +219,25 @@ class GamePanel extends JPanel
 		JButton restartButton = new JButton("Restart");
 		
 		quitButton.addActionListener(new ActionListener()
-															{
-																public void actionPerformed(ActionEvent e)
-																{
-																	System.exit(0);
-																}
-															});
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					System.exit(0);
+				}
+			});
 		
 		// TODO pause button / timer
+		pauseButton.setEnabled(false);
 		
 		restartButton.addActionListener(new ActionListener()
-															{
-																public void actionPerformed(ActionEvent e)
-																{
-//																	listeningPane.setFocusable(false);
-																	clearInput();
-																	listeningPane.requestFocus();
-																}
-															});
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					//	listeningPane.setFocusable(false);
+					clearInput();
+					listeningPane.requestFocus();
+				}
+			});
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(quitButton);
