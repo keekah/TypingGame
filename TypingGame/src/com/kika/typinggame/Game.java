@@ -2,6 +2,8 @@ package com.kika.typinggame;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.NumberFormat;
@@ -60,7 +62,7 @@ class WelcomePanel extends JPanel
 		
 		JLabel label = new JLabel("Select a word bank: ");
 		String [] wordBanks = {"Game of Thrones", "Literary Quotes", "Symbols", "Letters"};
-		JComboBox dropDown = new JComboBox(wordBanks);
+		JComboBox<String> dropDown = new JComboBox<String>(wordBanks);
 		wordBank = "Game of Thrones";	// set default selection
 		dropDown.addActionListener(new ActionListener()
 			{
@@ -119,7 +121,7 @@ class GamePanel extends JPanel
 	private Component listeningPane;
 	
 	private String displayWord;
-	private String wordTyped;
+	private String typedWord;
 	private boolean typedCorrectly; 
 	
 	private JLabel displayWordLabel;
@@ -129,11 +131,14 @@ class GamePanel extends JPanel
 	private JLabel numericWPMLabel;
 	private JLabel numericAccuracyLabel;
 	
+	private DisplayWord dw;
+	private String userInput;
+	
 	private int score;
 	private int numberOfWordsTyped;
 	private int numberOfWordsPresented; 
-	private int numberOfCharactersTyped;
-	private int numberOfMistypedCharacters;	
+	private int numCharactersTyped;
+	private int numErrors;		// number of mistyped characters	
 	
 	private HashMap<String, String> files;	// the files associated with names of wordbanks
 	
@@ -144,15 +149,17 @@ class GamePanel extends JPanel
 		if (wordBank == null)
 			throw new NullPointerException("wordBank");
 		
+		userInput = "";
+		numCharactersTyped = 0;
+		numErrors = 0;
+		
 		initializeFiles();
 		initializeStatusAndButtonBars();
-		initializeCenterArea();
 		initializeListener(frame);
 		
 		loadWordBank(wordBank);
-		
-		clearInput();
-		displayNewWord();
+		getDisplayWord();
+
 	}
 
 	private void loadWordBank(String wordBank)
@@ -189,12 +196,6 @@ class GamePanel extends JPanel
 		
 		// TODO add more files
 		files.put("Game of Thrones", "GoT-names-places.txt");
-	}
-	
-	private void displayNewWord()
-	{
-		displayWord = getRandomWord();
-		displayWordLabel.setText(displayWord);
 	}
 	
 	private void initializeStatusAndButtonBars()
@@ -265,22 +266,60 @@ class GamePanel extends JPanel
 		
 	}
 	
-	private void initializeCenterArea()
+	private void getDisplayWord()
 	{
-		JPanel displayArea = new JPanel(new GridBagLayout());
-		displayWordLabel = new JLabel();
-		displayArea.add(displayWordLabel);
-		
-		JPanel captureArea = new JPanel(new GridBagLayout());
-		typedWordLabel = new JLabel();
-		captureArea.add(typedWordLabel);
-		
-		JPanel centerArea = new JPanel(new GridLayout(2,1));
-		centerArea.add(displayArea);
-		centerArea.add(captureArea);
-		
-		add(centerArea, BorderLayout.CENTER);
+		String word = getRandomWord();
+		dw = new DisplayWord(word, 0, 0);
 	}
+	
+	
+	@Override
+	protected void paintComponent(Graphics g)
+	{
+		super.paintComponent(g);
+		
+		Graphics2D g2 = (Graphics2D)g;
+		Font f = new Font("Serif", Font.BOLD, 36);
+		g2.setFont(f);
+		
+		FontRenderContext context = g2.getFontRenderContext();
+		Rectangle2D bounds = f.getStringBounds(dw.getWord(), context);
+		
+		// center the string according to the bounds of its enclosing rectangle
+		double x = (getWidth() - bounds.getWidth()) / 2;
+		double y = (getHeight() - bounds.getHeight()) / 2;
+		
+		double ascent = -bounds.getY();
+		y += ascent;
+		
+		dw.setX((int)x);
+		dw.setY((int)y);
+		
+		drawWord(g2);
+		
+		if (userInput.length() != 0)
+			drawPartiallyColoredWord(g2);
+		
+	}
+	
+	// Draw the word in black
+	private void drawWord(Graphics2D g2)
+	{
+		g2.drawString(dw.getWord(), dw.getX(), dw.getY());
+	}
+	
+	// This will be called if the user's input thus far matches the word displayed.
+	// Draw the user's input in blue on top of the displayed word.
+	// Length of userInput is guaranteed to be less than or equal to the length 
+	// of the display word when this method is called.
+	private void drawPartiallyColoredWord(Graphics2D g2)
+	{
+		String matchingSubstring = dw.getWord().substring(0, userInput.length());
+		
+		g2.setColor(Color.blue);
+		g2.drawString(matchingSubstring, dw.getX(), dw.getY());
+	}
+
 	
 	private void initializeListener(GameFrame frame)
 	{
@@ -299,21 +338,28 @@ class GamePanel extends JPanel
 				// TODO change this isLetter check to include symbols/special characters
 				if (isValidKey(c))
 				{
-					wordTyped += c;
-					typedWordLabel.setText(wordTyped);
+					userInput += c;
+					System.out.println("UserInput: " + userInput);
+					System.out.println("displayWord: " + dw.getWord());
+					System.out.println();
+					// check if the user input thus far matches the displayed word
 					incrementCharactersTyped();
-					
+					if (inputMatches())
+					{
+						System.out.println("matches");
+						dw.incrementIndex();
+						repaint();
+					}
 				}
 				
 				
-				if (wordTyped.equals(displayWord))
+				if (userInput.equals(dw.getWord()))
 				{
 					typedCorrectly = true;
-					clearInput();
-					displayNewWord();
-//					System.out.println(numberOfWordsPresented);
 					numericAccuracyLabel.setText(getAccuracyString());
-					incrementScore(displayWord.length());
+					incrementScore(dw.getWord().length());
+					userInput = "";
+					getDisplayWord();
 				}
 					
 					
@@ -322,10 +368,11 @@ class GamePanel extends JPanel
 			@Override
 			public void keyPressed(KeyEvent e)
 			{
-				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE && wordTyped.length() > 0)
+				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE && userInput.length() > 0)
 				{
-					wordTyped = wordTyped.substring(0, wordTyped.length()-1);
-					typedWordLabel.setText(wordTyped);
+					userInput = userInput.substring(0, userInput.length()-1);
+//					typedWord = typedWord.substring(0, typedWord.length()-1);
+//					typedWordLabel.setText(typedWord);
 					incrementErrors();
 				}
 					
@@ -335,6 +382,18 @@ class GamePanel extends JPanel
 			public void keyReleased(KeyEvent e){}
 			
 		});
+	}
+	
+	private boolean inputMatches()
+	{
+		if (userInput.length() > dw.getWord().length())
+			return false;
+		
+		String s = dw.getWord().substring(0, userInput.length());
+		
+		System.out.println("comparing " + s + " with " + userInput);
+		
+		return userInput.equals(s);
 	}
 	
 	// check to ensure that the key typed is a letter, number, symbol, or space before appending it to wordTyped
@@ -347,14 +406,14 @@ class GamePanel extends JPanel
 	
 	private void clearInput()
 	{
-		wordTyped = "";
-		typedWordLabel.setText(wordTyped);
+//		typedWord = "";
+//		typedWordLabel.setText(typedWord);
 	}
 	
 	private String getAccuracyString()
 	{
-		double accuracy = numberOfCharactersTyped - numberOfMistypedCharacters;
-		accuracy /= numberOfCharactersTyped;
+		double accuracy = numCharactersTyped - numErrors;
+		accuracy /= numCharactersTyped;
 		accuracy *= 100;
 		
 		return String.format("%.2f", accuracy);
@@ -368,12 +427,12 @@ class GamePanel extends JPanel
 	
 	private void incrementErrors()
 	{
-		numberOfMistypedCharacters++;
+		numErrors++;
 	}
 	
 	private void incrementCharactersTyped()
 	{
-		numberOfCharactersTyped++;
+		numCharactersTyped++;
 	}
 	
 	// retrieve a word at random from the hashset
@@ -395,6 +454,62 @@ class GamePanel extends JPanel
 		
 		return nextWord;
 	}
+}
+
+// a word that is displayed for the user to type
+// includes word's location so the text color can be changed
+class DisplayWord
+{
+	private String word;
+	private int x;				// location of the word in pixels
+	private int y;				// (x,y) being the top left corner
+	private int matchingIndex;	// the end index (inclusive) of user's matching input
 	
+	DisplayWord(String word, int x, int y)
+	{
+		this.word = word;
+		this.x = x;
+		this.y = y;
+		matchingIndex = 0;
+	}
 	
+	public String getWord()
+	{
+		return word;
+	}
+	
+	public int getX()
+	{
+		return x;
+	}
+	
+	public int getY()
+	{
+		return y;
+	}
+	
+	public void setX(int x)
+	{
+		this.x = x;
+	}
+	
+	public void setY(int y)
+	{
+		this.y = y;
+	}
+	
+	public int getMatchingIndex()
+	{
+		return matchingIndex;
+	}
+	
+	public void incrementIndex()
+	{
+		matchingIndex++;
+	}
+	
+	public void resetIndex()
+	{
+		matchingIndex = 0;
+	}
 }
