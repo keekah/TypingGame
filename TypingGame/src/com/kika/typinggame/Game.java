@@ -250,8 +250,9 @@ class GamePanel extends JPanel
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					//	listeningPane.setFocusable(false);
-					clearInput();
+					getDisplayWord();
+					repaint();
+					userInput = "";
 					listeningPane.requestFocus();
 				}
 			});
@@ -328,70 +329,56 @@ class GamePanel extends JPanel
 		listeningPane.setFocusable(true);
 		listeningPane.setVisible(true);
 		listeningPane.addKeyListener(new KeyListener()
-		{
-			
-			@Override
-			public void keyTyped(KeyEvent e)
 			{
-				char c = e.getKeyChar();
-				// TODO change these string concats to stringbuilder
-				// TODO change this isLetter check to include symbols/special characters
-				if (isValidKey(c))
+				@Override
+				public void keyTyped(KeyEvent e)
 				{
-					userInput += c;
-					System.out.println("UserInput: " + userInput);
-					System.out.println("displayWord: " + dw.getWord());
-					System.out.println();
-					// check if the user input thus far matches the displayed word
-					incrementCharactersTyped();
-					if (inputMatches())
+					char c = e.getKeyChar();
+					// TODO change these string concats to stringbuilder
+					// TODO change this isLetter check to include symbols/special characters
+					if (isValidKey(c))
 					{
-						System.out.println("matches");
-						dw.incrementIndex();
-						repaint();
+						userInput += c;
+						System.out.println("UserInput: " + userInput);
+						System.out.println();
+						incrementCharactersTyped();
+						
+						if (inputMatches())
+							repaint();
+					}
+					
+					
+					if (userInput.equals(dw.getWord()))
+					{
+						numericAccuracyLabel.setText(getAccuracyString());
+						incrementScore(dw.getWord().length());
+						userInput = "";
+						getDisplayWord();
 					}
 				}
-				
-				
-				if (userInput.equals(dw.getWord()))
+	
+				@Override
+				public void keyPressed(KeyEvent e)
 				{
-					typedCorrectly = true;
-					numericAccuracyLabel.setText(getAccuracyString());
-					incrementScore(dw.getWord().length());
-					userInput = "";
-					getDisplayWord();
+					if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE && userInput.length() > 0)
+					{
+						userInput = userInput.substring(0, userInput.length()-1);
+						incrementErrors();
+					}
 				}
-					
-					
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE && userInput.length() > 0)
-				{
-					userInput = userInput.substring(0, userInput.length()-1);
-//					typedWord = typedWord.substring(0, typedWord.length()-1);
-//					typedWordLabel.setText(typedWord);
-					incrementErrors();
-				}
-					
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e){}
-			
-		});
+	
+				@Override
+				public void keyReleased(KeyEvent e){}
+			});
 	}
 	
+	// Compare the user input with the display word
 	private boolean inputMatches()
 	{
 		if (userInput.length() > dw.getWord().length())
 			return false;
 		
 		String s = dw.getWord().substring(0, userInput.length());
-		
-		System.out.println("comparing " + s + " with " + userInput);
 		
 		return userInput.equals(s);
 	}
@@ -402,12 +389,6 @@ class GamePanel extends JPanel
 	private boolean isValidKey(char c)
 	{
 		return Character.isDigit(c) || Character.isLetter(c) || Character.isSpaceChar(c) || c == '\'' || c == ',';
-	}
-	
-	private void clearInput()
-	{
-//		typedWord = "";
-//		typedWordLabel.setText(typedWord);
 	}
 	
 	private String getAccuracyString()
@@ -445,13 +426,6 @@ class GamePanel extends JPanel
 		String [] individualWords = nextWord.split(" ", -1);
 		numberOfWordsPresented += individualWords.length;
 		
-//			for (String s : individualWords)
-//			{
-//				System.out.print(s + " ");
-//			}
-//			
-//			System.out.println();
-		
 		return nextWord;
 	}
 }
@@ -463,14 +437,12 @@ class DisplayWord
 	private String word;
 	private int x;				// location of the word in pixels
 	private int y;				// (x,y) being the top left corner
-	private int matchingIndex;	// the end index (inclusive) of user's matching input
 	
 	DisplayWord(String word, int x, int y)
 	{
 		this.word = word;
 		this.x = x;
 		this.y = y;
-		matchingIndex = 0;
 	}
 	
 	public String getWord()
@@ -496,20 +468,5 @@ class DisplayWord
 	public void setY(int y)
 	{
 		this.y = y;
-	}
-	
-	public int getMatchingIndex()
-	{
-		return matchingIndex;
-	}
-	
-	public void incrementIndex()
-	{
-		matchingIndex++;
-	}
-	
-	public void resetIndex()
-	{
-		matchingIndex = 0;
 	}
 }
