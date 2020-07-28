@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 
@@ -15,6 +16,8 @@ public class GamePanel extends JPanel
 	private static final long serialVersionUID = 1L;
 
 	private Component listeningPane;
+	
+	private Image backgroundImage;
 	
 	private boolean allowBackspacing;
 	
@@ -38,6 +41,8 @@ public class GamePanel extends JPanel
 		if (wordBank == null)
 			throw new NullPointerException("wordBank");
 		
+		setLayout(new BorderLayout());
+		
 		allowBackspacing = true;
 		userInput = "";
 		numCharactersTyped = 0;
@@ -48,6 +53,25 @@ public class GamePanel extends JPanel
 		
 		loadWordBank(wordBank);
 		getDisplayWord();
+		
+		backgroundImage = Toolkit.getDefaultToolkit().createImage("backgrounds/ice.jpg");
+		
+		MediaTracker tracker = new MediaTracker(this);
+		tracker.addImage(backgroundImage, 0);
+		
+		try
+		{
+			tracker.waitForAll();
+		}
+		catch (InterruptedException e)
+		{
+			System.out.println("POOPIE");
+			e.printStackTrace();
+		}
+//		backgroundImage = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//		setTransparency(backgroundImage, 0.75);
+		
+		repaint();
 
 	}
 
@@ -79,9 +103,7 @@ public class GamePanel extends JPanel
 	}
 	
 	private void initializeStatusAndButtonBars()
-	{
-		setLayout(new BorderLayout());
-		
+	{	
 		// make the status bar
 		JPanel scorePanel = new JPanel();
 		JLabel scoreLabel = new JLabel("Score: ");
@@ -165,6 +187,28 @@ public class GamePanel extends JPanel
 		super.paintComponent(g);
 		
 		Graphics2D g2 = (Graphics2D)g;
+		
+		/*********/
+//		 * trying to set image background
+	
+		
+		
+		// overlay whiteScreen on backgroundImage to make it brighter
+		Rectangle2D whiteScreen = new Rectangle(getWidth(), getHeight());
+		
+		int transparency = (int)(0.2*255);
+		
+		Color whiteTransparent = new Color(255, 255, 255, transparency);
+		
+		g2.drawImage(backgroundImage, 0, 0, null);
+		g2.setColor(whiteTransparent);
+		g2.fill(whiteScreen);
+//		g2.draw(whiteScreen);
+		
+		g2.setColor(Color.black);
+		
+		/**********************************/
+		
 		Font f = new Font("Serif", Font.BOLD, 36);
 		g2.setFont(f);
 		
@@ -183,7 +227,7 @@ public class GamePanel extends JPanel
 		
 		drawWord(g2);
 		
-		if (userInput.length() != 0)
+		if (userInput.length() > 0)
 			drawPartiallyColoredWord(g2);
 	}
 	
