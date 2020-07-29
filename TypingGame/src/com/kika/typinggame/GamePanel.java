@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 
@@ -68,8 +67,6 @@ public class GamePanel extends JPanel
 			System.out.println("POOPIE");
 			e.printStackTrace();
 		}
-//		backgroundImage = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
-//		setTransparency(backgroundImage, 0.75);
 		
 		repaint();
 
@@ -193,7 +190,7 @@ public class GamePanel extends JPanel
 	
 		
 		
-		// overlay whiteScreen on backgroundImage to make it brighter
+		// overlay a white semi-transparent rectangle on the background image to make it brighter
 		Rectangle2D whiteScreen = new Rectangle(getWidth(), getHeight());
 		
 		int transparency = (int)(0.2*255);
@@ -203,7 +200,7 @@ public class GamePanel extends JPanel
 		g2.drawImage(backgroundImage, 0, 0, null);
 		g2.setColor(whiteTransparent);
 		g2.fill(whiteScreen);
-//		g2.draw(whiteScreen);
+		g2.draw(whiteScreen);
 		
 		g2.setColor(Color.black);
 		
