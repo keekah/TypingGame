@@ -33,6 +33,8 @@ public class GamePanel extends JPanel
 	private int numCharactersTyped;
 	private int numErrors;		// number of mistyped characters	
 	
+	private StringGenerator stringGenerator;
+	
 	private ArrayList<String> words;
 	
 	public GamePanel(String wordBank, GameFrame frame)
@@ -50,10 +52,16 @@ public class GamePanel extends JPanel
 		initializeStatusAndButtonBars();
 		initializeListener(frame);
 		
-		loadWordBank(wordBank);
+		// GOT methods
+//		loadWordBank(wordBank);
+//		getDisplayWord();
+		
+		// RandomStrings methods
+		stringGenerator = new StringGenerator();
 		getDisplayWord();
 		
-		backgroundImage = Toolkit.getDefaultToolkit().createImage("backgrounds/ice.jpg");
+		
+		backgroundImage = Toolkit.getDefaultToolkit().createImage("backgrounds/matrix.jpg");
 		
 		MediaTracker tracker = new MediaTracker(this);
 		tracker.addImage(backgroundImage, 0);
@@ -70,6 +78,11 @@ public class GamePanel extends JPanel
 		
 		repaint();
 
+	}
+	
+	private void getDisplayWord()
+	{
+		dw = new DisplayWord(stringGenerator.getHexLiteral());
 	}
 
 	private void loadWordBank(String wordBank)
@@ -105,22 +118,36 @@ public class GamePanel extends JPanel
 		JPanel scorePanel = new JPanel();
 		JLabel scoreLabel = new JLabel("Score: ");
 		numericScoreLabel = new JLabel("0");
+		scoreLabel.setForeground(Color.white);
+		numericScoreLabel.setForeground(Color.white);
 		scorePanel.add(scoreLabel);
 		scorePanel.add(numericScoreLabel);
 		
 		JPanel wpmPanel = new JPanel();
 		JLabel wpmLabel = new JLabel("WPM: ");
 		numericWPMLabel = new JLabel("0");
+		wpmLabel.setForeground(Color.white);
+		numericWPMLabel.setForeground(Color.white);
 		wpmPanel.add(wpmLabel);
 		wpmPanel.add(numericWPMLabel);
 		
 		JPanel accuracyPanel = new JPanel();
 		JLabel accuracyLabel = new JLabel("Accuracy: ");
 		numericAccuracyLabel = new JLabel("0");
+		accuracyLabel.setForeground(Color.white);
+		numericAccuracyLabel.setForeground(Color.white);
 		accuracyPanel.add(accuracyLabel);
 		accuracyPanel.add(numericAccuracyLabel);
 		
 		JPanel statusBar = new JPanel(new GridLayout(1,3));
+		int transparency = (int)(0.2*255);
+		Color whiteTransparent = new Color(255, 255, 255, transparency);
+		Color transparent = new Color(255, 255, 255, 0);
+		
+		statusBar.setBackground(whiteTransparent);
+		scorePanel.setBackground(whiteTransparent);
+		wpmPanel.setBackground(whiteTransparent);
+		accuracyPanel.setBackground(whiteTransparent);
 		statusBar.add(scorePanel);
 		statusBar.add(wpmPanel);
 		statusBar.add(accuracyPanel);
@@ -162,6 +189,7 @@ public class GamePanel extends JPanel
 
 		
 		JPanel buttonPanel = new JPanel();
+		buttonPanel.setBackground(whiteTransparent);
 		buttonPanel.add(quitButton);
 		buttonPanel.add(pauseButton);
 		buttonPanel.add(restartButton);
@@ -171,11 +199,11 @@ public class GamePanel extends JPanel
 		
 	}
 	
-	private void getDisplayWord()
-	{
-		String word = getRandomWord();
-		dw = new DisplayWord(word, 0, 0);
-	}
+	// GoT
+//	private void getDisplayWord()
+//	{
+//		dw = new DisplayWord(getRandomWord());
+//	}
 	
 	
 	@Override
@@ -189,24 +217,27 @@ public class GamePanel extends JPanel
 //		 * trying to set image background
 	
 		
-		
+		//GoT
 		// overlay a white semi-transparent rectangle on the background image to make it brighter
-		Rectangle2D whiteScreen = new Rectangle(getWidth(), getHeight());
-		
-		int transparency = (int)(0.2*255);
-		
-		Color whiteTransparent = new Color(255, 255, 255, transparency);
+//		Rectangle2D whiteScreen = new Rectangle(getWidth(), getHeight());
+//		int transparency = (int)(0.2*255);
+//		Color whiteTransparent = new Color(255, 255, 255, transparency);
 		
 		g2.drawImage(backgroundImage, 0, 0, null);
-		g2.setColor(whiteTransparent);
-		g2.fill(whiteScreen);
-		g2.draw(whiteScreen);
 		
-		g2.setColor(Color.black);
+		// GoT
+//		g2.setColor(whiteTransparent);
+//		g2.fill(whiteScreen);
+//		g2.draw(whiteScreen);
+
+		// Got:
+//		g2.setColor(Color.black);
+		
+		g2.setColor(Color.white);
 		
 		/**********************************/
 		
-		Font f = new Font("Serif", Font.BOLD, 36);
+		Font f = new Font("Dialog", Font.BOLD, 36);
 		g2.setFont(f);
 		
 		FontRenderContext context = g2.getFontRenderContext();
@@ -223,9 +254,27 @@ public class GamePanel extends JPanel
 		dw.setY((int)y);
 		
 		drawWord(g2);
-		
+	
 		if (userInput.length() > 0)
 			drawPartiallyColoredWord(g2);
+		
+		
+//		int dy = 10;
+		
+//		for (int i = 0; i < 300; i++)
+//		{
+//			 
+//			g2.drawImage(backgroundImage, 0, 0, null);
+//			dw.setY(dw.getY()+dy);
+//			
+//			drawWord(g2);
+//		
+//			if (userInput.length() > 0)
+//				drawPartiallyColoredWord(g2);
+//			
+//			repaint();
+//		}
+
 	}
 	
 	// Draw the word in black
@@ -352,7 +401,7 @@ public class GamePanel extends JPanel
 		numCharactersTyped++;
 	}
 	
-	// retrieve a word at random from the hashset
+	// retrieve a word at random from the list of words
 	private String getRandomWord()
 	{
 		int index = (int)(Math.random() * words.size());
