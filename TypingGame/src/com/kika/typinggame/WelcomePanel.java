@@ -12,6 +12,8 @@ public class WelcomePanel extends JPanel
 	
 	public WelcomePanel(GameFrame frame)
 	{
+		
+		
 		// Divide WelcomePanel into a top panel and a bottom panel
 		setLayout(new GridLayout(2,1));
 		
@@ -22,11 +24,11 @@ public class WelcomePanel extends JPanel
 		JLabel label = new JLabel("Select a word bank: ");
 		
 		// Populate word bank drop down 
-		String [] wordBanks = {"Game of Thrones", "Literary Quotes", "Symbols", "Letters"};
+		String [] wordBanks = {"Random Strings", "Game of Thrones", "Literary Quotes", "Symbols", "Letters"};
 		JComboBox<String> dropDown = new JComboBox<String>(wordBanks);
 		
 		// Set a default selection
-		wordBank = "Game of Thrones";
+		wordBank = "Random Strings";
 		
 		dropDown.addActionListener(new ActionListener()
 			{
