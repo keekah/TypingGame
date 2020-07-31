@@ -4,31 +4,39 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class WelcomePanel extends JPanel
 {
 	private static final long serialVersionUID = 1L;
 	private String wordBank;
+	private List<GamePanelSettings> settingsList;
 	
 	public WelcomePanel(GameFrame frame)
 	{
+		// Load the settings data for each available word bank
+		PropertiesBasedGamePanelSettingsLoader loader = new PropertiesBasedGamePanelSettingsLoader("game-settings");
+		settingsList = loader.load();
 		
-		
-		// Divide WelcomePanel into a top panel and a bottom panel
 		setLayout(new GridLayout(2,1));
-		
-		// Initialize the top panel and center its elements by using a GridBag with no constraints
+		initializeTopPanel();
+		initializeBottomPanel(frame);
+	}
+	
+	private void initializeTopPanel()
+	{
 		JPanel selectionPanel = new JPanel();
+		// Center its elements by using a GridBag with no constraints	
 		selectionPanel.setLayout(new GridBagLayout());
 		
 		JLabel label = new JLabel("Select a word bank: ");
 		
-		// Populate word bank drop down 
-		String [] wordBanks = {"Random Strings", "Game of Thrones", "Literary Quotes", "Symbols", "Letters"};
-		JComboBox<String> dropDown = new JComboBox<String>(wordBanks);
-		
-		// Set a default selection
-		wordBank = "Random Strings";
+		JComboBox<String> dropDown = populateWordBankDropdown();
+
+		// Set a default selection to avoid null pointer
+		wordBank = dropDown.getItemAt(0);
 		
 		dropDown.addActionListener(new ActionListener()
 			{
@@ -38,14 +46,24 @@ public class WelcomePanel extends JPanel
 				}
 			});
 		
-		
 		selectionPanel.add(label);
 		selectionPanel.add(dropDown);
 		
 		add(selectionPanel);
+	}
+	
+	private JComboBox<String> populateWordBankDropdown()
+	{
+		List<String> wordBanks = new ArrayList<String>();
 		
+		for (GamePanelSettings gps : settingsList)
+			wordBanks.add(gps.getName());
 		
-		// Initialize bottom panel
+		return new JComboBox<String>(wordBanks.toArray(new String[wordBanks.size()]));
+	}
+	
+	private void initializeBottomPanel(GameFrame frame)
+	{
 		JPanel buttonPanel  = new JPanel();
 		
 		JButton quitButton = new JButton("Quit");
@@ -60,7 +78,7 @@ public class WelcomePanel extends JPanel
 				}
 			});
 		
-		//TODO view hi scores 
+		//TODO view high scores 
 		viewHiScoresButton.setEnabled(false);
 		
 		playButton.addActionListener(new ActionListener()
@@ -72,14 +90,35 @@ public class WelcomePanel extends JPanel
 				}
 			});
 		
+		// allow user to select play using the enter key
+		frame.getRootPane().setDefaultButton(playButton);
+		
 		buttonPanel.add(quitButton);
 		buttonPanel.add(viewHiScoresButton);
 		buttonPanel.add(playButton);
 
 		add(buttonPanel);
-		
-		
-		// allow user to select play using the enter key
-		frame.getRootPane().setDefaultButton(playButton);
-	}		
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
