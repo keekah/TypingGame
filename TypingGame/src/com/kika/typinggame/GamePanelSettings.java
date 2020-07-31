@@ -1,6 +1,7 @@
 package com.kika.typinggame;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Image;
 import java.util.List;
 
 
