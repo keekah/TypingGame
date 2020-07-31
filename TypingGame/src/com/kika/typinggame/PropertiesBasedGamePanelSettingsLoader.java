@@ -1,11 +1,8 @@
 package com.kika.typinggame;
 
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.*;
+import java.util.List;
 import java.util.*;
 
 
@@ -24,12 +21,9 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 	{
 		List<GamePanelSettings> settingsList = new ArrayList<GamePanelSettings>();
 		
-		File directory = new File(directoryName);
-		
-		File [] files = directory.listFiles();
+		File [] files = new File(directoryName).listFiles();
 		
 		Properties properties = new Properties();
-		
 		
 		for (File f : files)
 		{
@@ -59,12 +53,7 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 				String wordBankFilename = properties.getProperty("word-bank-file");
 				List<String> wordBank = createWordBank(wordBankFilename);
 				
-				
-				System.out.println("Creating new GamePanelSettings object:");
-				System.out.println(name + ", " + backgroundImageFilename + ", " + fontFilename + ", " + wordBankFilename + "\n");
-				
-				GamePanelSettings settings = new GamePanelSettings(name, image, font, wordBank);
-				settingsList.add(settings);
+				settingsList.add(new GamePanelSettings(name, image, font, wordBank));
 			}
 			catch (Exception e)
 			{
@@ -73,7 +62,6 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 			}
 			
 		}
-		
 		
 		return settingsList;
 	}
