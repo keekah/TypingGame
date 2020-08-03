@@ -6,7 +6,7 @@ public class StringGenerator
 	public static final String PUNCTUATION = "!?,.\"\':;-";
 	public static final String BRACKETS = "{}()[]<>";
 	public static final String SYMBOLS = "!@#$%^&*-_=+\\/";
-	public static final String HEX = "0123456789ABCDEF";
+	public static final String HEX = "0123456789abcdef";
 	
 	
 	// Generate a random string between 3 and 8 characters (arbitrary)
