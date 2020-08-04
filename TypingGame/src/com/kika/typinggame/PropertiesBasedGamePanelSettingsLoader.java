@@ -27,20 +27,12 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 		
 		for (File f : files)
 		{
-			try
+			if (!f.getName().endsWith(".properties"))
+				continue;
+			
+			try (InputStream istream = new FileInputStream(f))
 			{
-				try (InputStream istream = new FileInputStream(f))
-				{
-					properties.load(istream);
-				}
-				catch (FileNotFoundException e)
-				{
-					e.printStackTrace();
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
+				properties.load(istream);
 				
 				String name = properties.getProperty("name");
 				
@@ -48,7 +40,7 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 				Image image = Toolkit.getDefaultToolkit().createImage(backgroundImageFilename);
 		
 				String fontFilename = properties.getProperty("font");
-				Font font = createFont(fontFilename);
+				Font font = Utilities.loadFont(fontFilename);
 				
 				String wordBankFilename = properties.getProperty("word-bank-file");
 				List<String> wordBank = createWordBank(wordBankFilename);
@@ -60,34 +52,11 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 				// If anything goes wrong while reading this file, skip it and move on
 				e.printStackTrace();
 			}
-			
 		}
 		
 		return settingsList;
 	}
 	
-	private Font createFont(String filename)
-	{
-		Font font = null;
-		
-		try
-		{
-			font = Font.createFont(Font.TRUETYPE_FONT, new File(filename)).deriveFont(36f);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (FontFormatException e)
-		{
-			e.printStackTrace();
-		}
-		
-		if (!GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font))
-			System.out.println("Font not registered correctly: " + filename);
-		
-		return font;
-	}
 	
 	private List<String> createWordBank(String filename)
 	{
@@ -106,11 +75,5 @@ public class PropertiesBasedGamePanelSettingsLoader implements GamePanelSettings
 		}
 		
 		return wordBank;
-	}
-
-	
-	public static void main(String[] args)
-	{
-		new PropertiesBasedGamePanelSettingsLoader("game-settings").load();
 	}
 }
