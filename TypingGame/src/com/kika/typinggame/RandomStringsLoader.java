@@ -1,12 +1,8 @@
 package com.kika.typinggame;
 
 import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +18,7 @@ public class RandomStringsLoader implements GamePanelSettingsLoader
 		
 		Image image = Toolkit.getDefaultToolkit().createImage("backgrounds/abstract-lines.jpg");
 		
-		Font font = createFont("fonts/bitstream.ttf");
+		Font font = Utilities.loadFont("fonts/bitstream.ttf");
 		
 		List<String> wordBank = createWordBank(1000);
 		
@@ -31,28 +27,6 @@ public class RandomStringsLoader implements GamePanelSettingsLoader
 		return settingsList;
 	}
 	
-	private Font createFont(String filename)
-	{
-		Font font = null;
-		
-		try
-		{
-			font = Font.createFont(Font.TRUETYPE_FONT, new File(filename)).deriveFont(36f);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (FontFormatException e)
-		{
-			e.printStackTrace();
-		}
-		
-		if (!GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font))
-			System.out.println("Font not registered correctly: " + filename);
-		
-		return font;
-	}
 	
 	// Creates a word bank of randomly generated strings with lengths between 3 and 8, inclusive
 	private List<String> createWordBank(int capacity)

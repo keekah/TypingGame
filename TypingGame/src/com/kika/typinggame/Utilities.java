@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Utilities
 {
 
-	public static Font createFont(String filename)
+	public static Font loadFont(String filename)
 	{
 		Font font = null;
 		
