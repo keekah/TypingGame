@@ -3,8 +3,6 @@ package com.kika.typinggame;
 import java.awt.*;
 import javax.swing.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameFrame extends JFrame
 {	
@@ -20,7 +18,6 @@ public class GameFrame extends JFrame
 		setSize(width/4, height/2);	
 		setLocationRelativeTo(null);
 //		setLocationByPlatform(true);
-
 
 
 		WelcomePanel welcomeScreen = new WelcomePanel(this, loader);
