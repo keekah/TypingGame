@@ -46,7 +46,7 @@ public class StringGenerator
 	// i.e. any number, letter, symbol, or punctuation mark
 	public char getRandomChar()
 	{
-		int ascii = (int)(Math.random() * 93) + '!';
+		int ascii = (int)(Math.random() * ('~' - '!' + 1)) + '!';
 		
 		return (char)ascii;
 	}
