@@ -3,11 +3,14 @@ package com.kika.typinggame;
 import java.awt.*;
 import javax.swing.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameFrame extends JFrame
 {	
 	private static final long serialVersionUID = 1L;
 
-	public GameFrame()
+	public GameFrame(GamePanelSettingsLoader loader)
 	{
 		// set the frame size according to user's screen size
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -18,7 +21,9 @@ public class GameFrame extends JFrame
 		setLocationRelativeTo(null);
 //		setLocationByPlatform(true);
 
-		WelcomePanel welcomeScreen = new WelcomePanel(this);
+
+
+		WelcomePanel welcomeScreen = new WelcomePanel(this, loader);
 		setContentPane(welcomeScreen);
 	}
 }

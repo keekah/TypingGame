@@ -1,6 +1,9 @@
 package com.kika.typinggame;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JFrame;
 
 public class Game
@@ -11,7 +14,11 @@ public class Game
 			{
 				public void run()
 				{
-					GameFrame frame = new GameFrame();
+					List<GamePanelSettingsLoader> loaders = new ArrayList<GamePanelSettingsLoader>();
+					loaders.add(new PropertiesBasedGamePanelSettingsLoader("game-settings"));
+					loaders.add(new RandomStringsLoader());
+					
+					GameFrame frame = new GameFrame(new CompositeLoader(loaders));
 					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					frame.setVisible(true);
 				}

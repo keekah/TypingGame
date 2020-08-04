@@ -1,12 +1,12 @@
 package com.kika.typinggame;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.swing.*;
 
 public class WelcomePanel extends JPanel
 {
@@ -14,10 +14,10 @@ public class WelcomePanel extends JPanel
 	private String wordBank;
 	private List<GamePanelSettings> settingsList;
 	
-	public WelcomePanel(GameFrame frame)
+	
+	public WelcomePanel(GameFrame frame, GamePanelSettingsLoader loader)
 	{
 		// Load the settings data for each available word bank
-		PropertiesBasedGamePanelSettingsLoader loader = new PropertiesBasedGamePanelSettingsLoader("game-settings");
 		settingsList = loader.load();
 		
 		setLayout(new GridLayout(2,1));
@@ -85,8 +85,7 @@ public class WelcomePanel extends JPanel
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					frame.setContentPane(new GamePanel(wordBank, frame));
-					frame.repaint();
+					playButtonPressed(frame);
 				}
 			});
 		
@@ -99,26 +98,23 @@ public class WelcomePanel extends JPanel
 
 		add(buttonPanel);
 	}
+	
+	private void playButtonPressed(GameFrame frame)
+	{
+		GamePanelSettings settings = getSettings();
+		
+		if (settings == null)
+			throw new NullPointerException("settings");
+		
+		frame.setContentPane(new GamePanel(settings, frame));
+	}
+	
+	private GamePanelSettings getSettings()
+	{
+		for (GamePanelSettings gps : settingsList)
+			if (wordBank.equals(gps.getName()))
+				return gps;
+		
+		return null;
+	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
